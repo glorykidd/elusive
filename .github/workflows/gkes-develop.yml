@@ -48,7 +48,7 @@ jobs:
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value $(git diff --name-status ORIG_HEAD..)
       - name: Build New Code
         run: |
-          cd web/gkweb.new/gkwebNew
+          cd gkwebNew
           dotnet build
       - name: Email Notification 
         run: |
