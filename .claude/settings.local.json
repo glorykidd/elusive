@@ -1,0 +1,10 @@
+{
+  "disabledMcpjsonServers": [
+    "Azure ADO Server"
+  ],
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)"
+    ]
+  }
+}
