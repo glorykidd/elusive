@@ -7,7 +7,7 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
-    paths: [ gkwebNew/** ]
+    paths: [ gkwebNew/**, gkwebNew.Tests/**, apiObjects/** ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -52,11 +52,14 @@ jobs:
           Copy-Item C:/www-root/glorykidd.com/* -Destination C:/deployment-stage/gkes/${{ steps.buildid.outputs.formattedTime }}/ -Recurse
           Compress-Archive -Path "C:/deployment-stage/gkes/${{ steps.buildid.outputs.formattedTime }}/*" -Update -DestinationPath C:/backups/gkes-${{ steps.buildid.outputs.formattedTime }}.zip -CompressionLevel "Fastest"
           Remove-Item -Path C:/deployment-stage/gkes/${{ steps.buildid.outputs.formattedTime }} -Recurse
+      - name: Run Tests
+        run: |
+          dotnet test gkwebNew.Tests/gkwebNew.Tests.csproj --no-restore
       - name: Deploy New Code
         run: |
           cd gkwebNew
           dotnet build
-          dotnet publish -c Release -o C:/www-root/glorykidd.com  
+          dotnet publish -c Release -o C:/www-root/glorykidd.com
       - name: Email Notification 
         run: |
           cd  D:/it-tools/mailer 

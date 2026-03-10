@@ -7,7 +7,7 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["develop"]
-    paths: [ gkwebNew/** ]
+    paths: [ gkwebNew/**, gkwebNew.Tests/**, apiObjects/** ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -50,6 +50,9 @@ jobs:
         run: |
           cd gkwebNew
           dotnet build
+      - name: Run Tests
+        run: |
+          dotnet test gkwebNew.Tests/gkwebNew.Tests.csproj --no-restore
       - name: Email Notification 
         run: |
           cd  D:/it-tools/mailer 
