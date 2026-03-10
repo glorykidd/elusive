@@ -69,4 +69,4 @@ jobs:
       - name: Email Notification 
         run: |
           cd  D:/it-tools/mailer 
-          ./SesMailer.exe --to dlnuckolls@gmail.com --subject "Elusive Software Release ${{ steps.buildid.outputs.formattedTime }}" --body C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt --format text
+          ./SesMailer.exe --to "David Nuckolls <david.nuckolls@glorykidd.com>" --subject "Elusive Software Build ${{ steps.buildid.outputs.formattedTime }}" --body C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt --format text  --from-display-name "Elusive Software" 
