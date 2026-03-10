@@ -7,7 +7,7 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["main"]
-    paths: [ gkweb.new/** ]
+    paths: [ gkwebNew/** ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -54,7 +54,7 @@ jobs:
           Remove-Item -Path C:/deployment-stage/gkes/${{ steps.buildid.outputs.formattedTime }} -Recurse
       - name: Deploy New Code
         run: |
-          cd web/gkweb.new/gkwebNew
+          cd gkwebNew
           dotnet build
           dotnet publish -c Release -o C:/www-root/glorykidd.com  
       - name: Email Notification 
