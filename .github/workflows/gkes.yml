@@ -33,28 +33,34 @@ jobs:
         with:
           utcOffset: "00:00"
           format: YYYY.MM.DD-HH.mm
+      - name: Run Tests
+        run: |
+          dotnet test gkwebNew.Tests/gkwebNew.Tests.csproj  --configuration Release --logger "console;verbosity=minimal" > C:/deployment-stage/gkes-tests-${{ steps.buildid.outputs.formattedTime }}.md 
       - name: List all changed files
         run: |
-          Set-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Commit Item Messages:"
-          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
-          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value $(git log --format=%B -n 1 HEAD)
+          Set-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value ""
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Publish Results for Elusive Software"
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value ""
-          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Build Number - ${{ steps.buildid.outputs.formattedTime }}"
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value ""
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Commit Item Messages:"
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value $(git log --format=%B -n 1 HEAD)
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value ""
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Changed Files"
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value $(git diff --name-status ORIG_HEAD..)
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value ""
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Test Results:"
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value (Get-Content -Path C:/deployment-stage/gkes-tests-${{ steps.buildid.outputs.formattedTime }}.md)
       - name: Create Backup
         run: |
           New-Item -ItemType "directory" -Path "C:/deployment-stage/gkes/${{ steps.buildid.outputs.formattedTime }}/" -Force
           Copy-Item C:/www-root/glorykidd.com/* -Destination C:/deployment-stage/gkes/${{ steps.buildid.outputs.formattedTime }}/ -Recurse
           Compress-Archive -Path "C:/deployment-stage/gkes/${{ steps.buildid.outputs.formattedTime }}/*" -Update -DestinationPath C:/backups/gkes-${{ steps.buildid.outputs.formattedTime }}.zip -CompressionLevel "Fastest"
           Remove-Item -Path C:/deployment-stage/gkes/${{ steps.buildid.outputs.formattedTime }} -Recurse
-      - name: Run Tests
-        run: |
-          dotnet test gkwebNew.Tests/gkwebNew.Tests.csproj --no-restore
       - name: Deploy New Code
         run: |
           cd gkwebNew
