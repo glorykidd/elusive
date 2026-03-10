@@ -1,0 +1,42 @@
+@inherits TestContext
+@code {
+    [Fact]
+    public void About_HasPageTitleComponent()
+    {
+        var cut = Render(@<About />);
+        var pageTitle = cut.FindComponent<PageTitle>();
+        Assert.NotNull(pageTitle);
+    }
+
+    [Fact]
+    public void About_RendersCompanyName()
+    {
+        var cut = Render(@<About />);
+        Assert.Contains("GloryKidd Technologies LLC", cut.Markup);
+    }
+
+    [Fact]
+    public void About_RendersMissionStatement()
+    {
+        var cut = Render(@<About />);
+        Assert.Contains("Our mission is to use workflow processes", cut.Markup);
+    }
+
+    [Fact]
+    public void About_RendersGoogleFormEmbed()
+    {
+        var cut = Render(@<About />);
+        var iframe = cut.Find("iframe");
+
+        Assert.Contains("forms.gle", iframe.GetAttribute("src"));
+    }
+
+    [Fact]
+    public void About_HasTwoColumnLayout()
+    {
+        var cut = Render(@<About />);
+
+        Assert.NotNull(cut.Find(".col-md-4"));
+        Assert.NotNull(cut.Find(".col-md-8"));
+    }
+}

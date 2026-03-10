@@ -1,0 +1,67 @@
+@inherits TestContext
+@code {
+    [Fact]
+    public void Home_HasPageTitleComponent()
+    {
+        var cut = Render(@<Home />);
+        // bUnit doesn't render PageTitle to the DOM; verify the component is present
+        var pageTitle = cut.FindComponent<PageTitle>();
+        Assert.NotNull(pageTitle);
+    }
+
+    [Fact]
+    public void Home_RendersWhoAreWeSection()
+    {
+        var cut = Render(@<Home />);
+        var markup = cut.Markup;
+
+        Assert.Contains("Who are we?", markup);
+        Assert.Contains("GloryKidd Technologies mission", markup);
+    }
+
+    [Fact]
+    public void Home_RendersCustomSoftwareSection()
+    {
+        var cut = Render(@<Home />);
+        var markup = cut.Markup;
+
+        Assert.Contains("Custom Software Solutions", markup);
+        Assert.Contains("Creative, pragmatic and technology agnostic", markup);
+    }
+
+    [Fact]
+    public void Home_RendersConsultingSection()
+    {
+        var cut = Render(@<Home />);
+        var markup = cut.Markup;
+
+        Assert.Contains("Consulting Solutions", markup);
+        Assert.Contains("IT teams face constant pressure", markup);
+    }
+
+    [Fact]
+    public void Home_RendersYouTubeEmbed()
+    {
+        var cut = Render(@<Home />);
+        var iframe = cut.Find("iframe");
+
+        Assert.Contains("youtube.com/embed/", iframe.GetAttribute("src"));
+    }
+
+    [Fact]
+    public void Home_RendersLearnMoreLinks()
+    {
+        var cut = Render(@<Home />);
+        var links = cut.FindAll("a");
+
+        Assert.Contains(links, l => l.GetAttribute("href") == "/about");
+        Assert.Contains(links, l => l.GetAttribute("href") == "/software");
+    }
+
+    [Fact]
+    public void Home_RendersLogoImage()
+    {
+        var cut = Render(@<Home />);
+        Assert.Contains("images/gk-logo-square.svg", cut.Markup);
+    }
+}

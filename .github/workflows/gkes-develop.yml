@@ -7,7 +7,7 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["develop"]
-    paths: [ gkwebNew/** ]
+    paths: [ gkwebNew/**, gkwebNew.Tests/**, apiObjects/** ]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -21,7 +21,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: [ self-hosted ]
-    name: Deploy Elusive Software
+    name: Build Elusive Software
     outputs: 
       build: ${{ steps.buildid.outputs.formattedTime }}
     steps:
@@ -33,19 +33,28 @@ jobs:
         with:
           utcOffset: "00:00"
           format: YYYY.MM.DD-HH.mm
+      - name: Run Tests
+        run: |
+          dotnet test gkwebNew.Tests/gkwebNew.Tests.csproj  --configuration Release --logger "console;verbosity=minimal" > C:/deployment-stage/gkes-tests-${{ steps.buildid.outputs.formattedTime }}.md 
       - name: List all changed files
         run: |
-          Set-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Commit Item Messages:"
-          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
-          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value $(git log --format=%B -n 1 HEAD)
+          Set-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value ""
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Publish Results for Elusive Software"
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value ""
-          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Build Number - ${{ steps.buildid.outputs.formattedTime }}"
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value ""
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Commit Item Messages:"
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value $(git log --format=%B -n 1 HEAD)
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value ""
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Changed Files"
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value $(git diff --name-status ORIG_HEAD..)
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value ""
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "Test Results:"
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value "---------------------------------"
+          Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value (Get-Content -Path C:/deployment-stage/gkes-tests-${{ steps.buildid.outputs.formattedTime }}.md)
       - name: Build New Code
         run: |
           cd gkwebNew
@@ -53,4 +62,4 @@ jobs:
       - name: Email Notification 
         run: |
           cd  D:/it-tools/mailer 
-          ./SesMailer.exe --to dlnuckolls@gmail.com --subject "Elusive Software Build ${{ steps.buildid.outputs.formattedTime }}" --body C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt --format text
+          ./SesMailer.exe --to "David Nuckolls <david.nuckolls@glorykidd.com>" --subject "Elusive Software Build ${{ steps.buildid.outputs.formattedTime }}" --body C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt --format text  --from-display-name "Elusive Software" 

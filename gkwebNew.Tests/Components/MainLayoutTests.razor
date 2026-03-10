@@ -1,0 +1,53 @@
+@inherits TestContext
+@code {
+    [Fact]
+    public void MainLayout_RendersFooter()
+    {
+        var cut = Render(@<MainLayout>
+            <Body>
+                <p>Test content</p>
+            </Body>
+        </MainLayout>);
+
+        Assert.Contains("Proverbs 22:29", cut.Markup);
+        Assert.Contains("GloryKidd Technologies LLC", cut.Markup);
+        Assert.Contains("Copyright", cut.Markup);
+    }
+
+    [Fact]
+    public void MainLayout_RendersBodyContent()
+    {
+        var cut = Render(@<MainLayout>
+            <Body>
+                <p id="test-content">Hello World</p>
+            </Body>
+        </MainLayout>);
+
+        Assert.NotNull(cut.Find("#test-content"));
+        Assert.Contains("Hello World", cut.Markup);
+    }
+
+    [Fact]
+    public void MainLayout_RendersNavMenu()
+    {
+        var cut = Render(@<MainLayout>
+            <Body>
+                <p>Test</p>
+            </Body>
+        </MainLayout>);
+
+        Assert.NotNull(cut.Find("nav.navbar"));
+    }
+
+    [Fact]
+    public void MainLayout_RendersMainContainer()
+    {
+        var cut = Render(@<MainLayout>
+            <Body>
+                <p>Test</p>
+            </Body>
+        </MainLayout>);
+
+        Assert.NotNull(cut.Find("main .container"));
+    }
+}
