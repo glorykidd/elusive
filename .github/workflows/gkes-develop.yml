@@ -57,7 +57,7 @@ jobs:
           Add-Content -Path C:/deployment-stage/gkes-${{ steps.buildid.outputs.formattedTime }}.txt -Value (Get-Content -Path C:/deployment-stage/gkes-tests-${{ steps.buildid.outputs.formattedTime }}.md)
       - name: Build New Code
         run: |
-          cd gkwebNew
+          cd gkwebNew.Server
           dotnet build
       - name: Email Notification 
         run: |
