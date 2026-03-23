@@ -1,0 +1,46 @@
+@inherits TestContext
+@code {
+    [Fact]
+    public void Software_HasPageTitleComponent()
+    {
+        var cut = Render(@<Software />);
+        var pageTitle = cut.FindComponent<PageTitle>();
+        Assert.NotNull(pageTitle);
+    }
+
+    [Fact]
+    public void Software_RendersDigitalStrategyHeading()
+    {
+        var cut = Render(@<Software />);
+        Assert.Contains("Define Your Digital Strategy", cut.Markup);
+    }
+
+    [Fact]
+    public void Software_RendersRaiseYourTeamHeading()
+    {
+        var cut = Render(@<Software />);
+        Assert.Contains("Raise Your Team", cut.Markup);
+    }
+
+    [Theory]
+    [InlineData("Strategic Focus")]
+    [InlineData("Technology Agnostic")]
+    [InlineData("Agile Approach")]
+    [InlineData("Development Process")]
+    public void Software_RendersSoftwareSections(string sectionTitle)
+    {
+        var cut = Render(@<Software />);
+        Assert.Contains(sectionTitle, cut.Markup);
+    }
+
+    [Theory]
+    [InlineData("Security Services")]
+    [InlineData("Technology and Workflow Optimizations")]
+    [InlineData("Network Optimizations")]
+    [InlineData("Managed Infrastructure")]
+    public void Software_RendersConsultingSections(string sectionTitle)
+    {
+        var cut = Render(@<Software />);
+        Assert.Contains(sectionTitle, cut.Markup);
+    }
+}

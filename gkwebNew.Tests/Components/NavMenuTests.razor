@@ -1,0 +1,76 @@
+@inherits TestContext
+@code {
+    [Fact]
+    public void NavMenu_RendersNavbar()
+    {
+        var cut = Render(@<NavMenu />);
+        Assert.NotNull(cut.Find("nav.navbar"));
+    }
+
+    [Fact]
+    public void NavMenu_RendersAllNavigationLinks()
+    {
+        var cut = Render(@<NavMenu />);
+        var navLinks = cut.FindAll("li.nav-item");
+
+        Assert.Equal(4, navLinks.Count);
+    }
+
+    [Theory]
+    [InlineData("", "Home")]
+    [InlineData("/portfolio", "Portfolio")]
+    [InlineData("/software", "Software & Consulting Service")]
+    [InlineData("/about", "About Us")]
+    public void NavMenu_RendersCorrectLinks(string href, string text)
+    {
+        var cut = Render(@<NavMenu />);
+        var links = cut.FindAll("li.nav-item a");
+
+        Assert.Contains(links, link =>
+            link.GetAttribute("href") == href &&
+            link.TextContent.Trim() == text);
+    }
+
+    [Fact]
+    public void NavMenu_RendersBrandLogo()
+    {
+        var cut = Render(@<NavMenu />);
+        Assert.NotNull(cut.Find("a.navbar-brand"));
+        Assert.Contains("images/gk-logo-square.svg", cut.Markup);
+        Assert.Contains("images/elusive_logo.png", cut.Markup);
+    }
+
+    [Fact]
+    public void NavMenu_TogglerStartsCollapsed()
+    {
+        var cut = Render(@<NavMenu />);
+        var toggler = cut.Find("button.navbar-toggler");
+
+        Assert.Contains("collapsed", toggler.GetAttribute("class"));
+    }
+
+    [Fact]
+    public void NavMenu_ClickTogglerExpandsMenu()
+    {
+        var cut = Render(@<NavMenu />);
+        var toggler = cut.Find("button.navbar-toggler");
+
+        toggler.Click();
+
+        Assert.DoesNotContain("collapsed", toggler.GetAttribute("class"));
+        var collapseDiv = cut.Find("#navbarCollapse");
+        Assert.Contains("show", collapseDiv.GetAttribute("class"));
+    }
+
+    [Fact]
+    public void NavMenu_DoubleClickTogglerCollapsesMenu()
+    {
+        var cut = Render(@<NavMenu />);
+        var toggler = cut.Find("button.navbar-toggler");
+
+        toggler.Click();
+        toggler.Click();
+
+        Assert.Contains("collapsed", toggler.GetAttribute("class"));
+    }
+}

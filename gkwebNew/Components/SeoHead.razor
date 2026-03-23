@@ -1,0 +1,31 @@
+@using gkwebNew.Services
+
+<PageTitle>@Data.Title</PageTitle>
+<HeadContent>
+    <meta name="description" content="@Data.Description" />
+    <link rel="canonical" href="@Data.CanonicalUrl" />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="@Data.Title" />
+    <meta property="og:description" content="@Data.Description" />
+    <meta property="og:type" content="@Data.OgType" />
+    <meta property="og:url" content="@Data.CanonicalUrl" />
+    <meta property="og:image" content="@(Data.OgImage ?? SeoDefaults.DefaultOgImage)" />
+    <meta property="og:site_name" content="@SeoDefaults.SiteName" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@Data.Title" />
+    <meta name="twitter:description" content="@Data.Description" />
+    <meta name="twitter:image" content="@(Data.OgImage ?? SeoDefaults.DefaultOgImage)" />
+
+    @if (StructuredData is not null)
+    {
+        <script type="application/ld+json">@((MarkupString)StructuredData)</script>
+    }
+</HeadContent>
+
+@code {
+    [Parameter, EditorRequired] public SeoPageData Data { get; set; } = default!;
+    [Parameter] public string? StructuredData { get; set; }
+}

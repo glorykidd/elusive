@@ -1,0 +1,51 @@
+@inherits TestContext
+@code {
+    [Fact]
+    public void Portfolio_HasPageTitleComponent()
+    {
+        var cut = Render(@<Portfolio />);
+        var pageTitle = cut.FindComponent<PageTitle>();
+        Assert.NotNull(pageTitle);
+    }
+
+    [Fact]
+    public void Portfolio_RendersTurleysPlaceSection()
+    {
+        var cut = Render(@<Portfolio />);
+        var markup = cut.Markup;
+
+        Assert.Contains("Turley's Place", markup);
+        Assert.Contains("Turley Richards", markup);
+    }
+
+    [Fact]
+    public void Portfolio_RendersAdventFinancialSection()
+    {
+        var cut = Render(@<Portfolio />);
+        var markup = cut.Markup;
+
+        Assert.Contains("Advent Financial Systems", markup);
+        Assert.Contains("Jennifer Hobbs", markup);
+    }
+
+    [Fact]
+    public void Portfolio_RendersYouTubeEmbeds()
+    {
+        var cut = Render(@<Portfolio />);
+        var iframes = cut.FindAll("iframe");
+
+        Assert.Equal(2, iframes.Count);
+        Assert.All(iframes, iframe =>
+            Assert.Contains("youtube.com/embed/", iframe.GetAttribute("src")));
+    }
+
+    [Fact]
+    public void Portfolio_RendersTurleysPlaceLink()
+    {
+        var cut = Render(@<Portfolio />);
+        var link = cut.FindAll("a").First(a =>
+            a.GetAttribute("href")?.Contains("turleyrichards.com") == true);
+
+        Assert.Contains("Visit Turley's Place", link.TextContent);
+    }
+}
