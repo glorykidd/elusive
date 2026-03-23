@@ -1,0 +1,13 @@
+<Router AppAssembly="@typeof(gkwebNew.Pages.Home).Assembly"
+        AdditionalAssemblies="new[] { typeof(gkwebNew.Server.Components.App).Assembly }">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(gkwebNew.Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <PageTitle>Not found</PageTitle>
+        <LayoutView Layout="@typeof(gkwebNew.Layout.MainLayout)">
+            <p role="alert">Sorry, there's nothing at this address.</p>
+        </LayoutView>
+    </NotFound>
+</Router>

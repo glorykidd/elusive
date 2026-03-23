@@ -63,7 +63,7 @@ jobs:
           Remove-Item -Path C:/deployment-stage/gkes/${{ steps.buildid.outputs.formattedTime }} -Recurse
       - name: Deploy New Code
         run: |
-          cd gkwebNew
+          cd gkwebNew.Server
           dotnet build
           dotnet publish -c Release -o C:/www-root/glorykidd.com
       - name: Email Notification 

@@ -1,12 +1,14 @@
 ﻿@page "/"
 
-<PageTitle>GloryKidd</PageTitle>
+<SeoHead Data="@_seo" StructuredData="@_jsonLd" />
+
+<h1 class="visually-hidden">GloryKidd Technologies - Custom Software Solutions &amp; IT Consulting</h1>
 
 <div class="row">
   <div class="col-md-6 col-sm-12">
     <Card TextAlignment="Alignment.Start" Style="border: 0px;">
       <CardBody>
-        <image src="images/gk-logo-square.svg" class="image-icon" />
+        <img src="images/gk-logo-square.svg" class="image-icon" alt="GloryKidd Technologies logo" />
         <CardTitle><i>Who are we?</i></CardTitle>
         <CardText>
           <p style="text-align: justify;">GloryKidd Technologies mission is to leverage the "Best in Breed" technology
@@ -27,7 +29,7 @@
   <div class="col-md-6 col-sm-12">
     <iframe style="width: 100%; height: 350px; border-radius: 25px;" class="embed-responsive-item"
       src="https://www.youtube.com/embed/pRZ3iggpyYw?autoplay=0&wmode=transparent&controls=0&rel=0&showinfo=0&start=0&enablejsapi=1&origin=https%3A%2F%2Fwww.glorykidd.com&widgetid=1&forigin=https%3A%2F%2Fwww.glorykidd.com%2F&aoriginsup=1&gporigin=https%3A%2F%2Fwww.glorykidd.com%2Fcontact&vf=6"
-      allowfullscreen></iframe>
+      loading="lazy" title="GloryKidd Technologies Introduction" allowfullscreen></iframe>
   </div>
 </div>
 <div class="row">
@@ -78,3 +80,22 @@
     </Card>
   </div>
 </div>
+
+@code {
+    private readonly SeoPageData _seo = new(
+        Title: "GloryKidd Technologies - Custom Software Solutions & IT Consulting",
+        Description: "GloryKidd Technologies delivers custom software development, IT consulting, and digital strategy services. Technology agnostic, agile approach, with a focus on excellence.",
+        CanonicalUrl: $"{SeoDefaults.BaseUrl}/"
+    );
+
+    private readonly string _jsonLd = """
+        {
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "GloryKidd Technologies LLC",
+            "url": "https://www.glorykidd.com",
+            "logo": "https://www.glorykidd.com/images/gk-logo-square.svg",
+            "description": "Custom software development, IT consulting, and digital strategy services."
+        }
+        """;
+}
