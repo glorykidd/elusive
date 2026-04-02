@@ -2,6 +2,7 @@ using gkwebNew.Server.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorComponents();
 
 var app = builder.Build();

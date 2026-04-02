@@ -1,3 +1,6 @@
+@inject IConfiguration Configuration
+@inject IHttpContextAccessor HttpContextAccessor
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -5,6 +8,40 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
+    <!-- Google Analytics (loaded only after cookie consent) -->
+    <script>
+        var gaMeasurementId = '@(Configuration["GoogleAnalytics:MeasurementId"] ?? "")';
+
+        function loadGoogleAnalytics() {
+            if (!gaMeasurementId || document.getElementById('ga-script')) return;
+            var script = document.createElement('script');
+            script.id = 'ga-script';
+            script.async = true;
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=' + gaMeasurementId;
+            document.head.appendChild(script);
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            window.gtag = gtag;
+            gtag('js', new Date());
+            gtag('config', gaMeasurementId);
+        }
+
+        function acceptCookies() {
+            document.cookie = 'cookie_consent=accepted;path=/;max-age=' + (365 * 24 * 60 * 60) + ';SameSite=Lax';
+            document.getElementById('cookie-consent-banner').style.display = 'none';
+            loadGoogleAnalytics();
+        }
+
+        function declineCookies() {
+            document.cookie = 'cookie_consent=declined;path=/;max-age=' + (365 * 24 * 60 * 60) + ';SameSite=Lax';
+            document.getElementById('cookie-consent-banner').style.display = 'none';
+        }
+
+        // Auto-load GA if consent was previously given
+        if (document.cookie.indexOf('cookie_consent=accepted') !== -1) {
+            loadGoogleAnalytics();
+        }
+    </script>
     <HeadOutlet />
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-LN+7fdVzj6u52u30Kp6M/trliBMCMKTyK833zpbD+pXdCLuTusPj697FH4R/5mcr" crossorigin="anonymous" />
@@ -19,6 +56,20 @@
 <body>
     <Routes />
 
+    @if (Configuration["GoogleAnalytics:MeasurementId"] is not null)
+    {
+        <div id="cookie-consent-banner" class="cookie-consent-banner"
+             style="@(cookieConsentStyle)">
+            <div class="cookie-consent-content">
+                <span>We use cookies to analyze site traffic and improve your experience. By clicking "Accept", you consent to our use of analytics cookies.</span>
+                <div class="cookie-consent-buttons">
+                    <button class="btn btn-sm btn-outline-light" onclick="declineCookies()">Decline</button>
+                    <button class="btn btn-sm btn-success" onclick="acceptCookies()">Accept</button>
+                </div>
+            </div>
+        </div>
+    }
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-ndDqU0Gzau9qJ1lfW4pNLlhNTkCfHzAVBReH9diLvGRem5+R9g2FzA8ZGN954O5Q"
         crossorigin="anonymous"></script>
@@ -27,3 +78,10 @@
 </body>
 
 </html>
+
+@code {
+    private string cookieConsentStyle =>
+        HttpContextAccessor.HttpContext?.Request.Cookies["cookie_consent"] is not null
+            ? "display:none"
+            : "";
+}
