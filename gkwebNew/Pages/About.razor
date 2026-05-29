@@ -134,7 +134,7 @@
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Contact form submission failed for {Email}", Input.Email);
+            Logger.LogError(ex, "Contact form submission failed");
             _submitError = true;
         }
     }
