@@ -1,4 +1,5 @@
 using gkweb.api.types.models;
+using gkwebNew.Services;
 using MailKit.Net.Smtp;
 using MailKit.Security;
 using Microsoft.Extensions.Configuration;
@@ -88,7 +89,7 @@ public class EmailService
                 </table>
               </div>
               <div style="padding: 16px; text-align: center; background: #eeeeee; font-size: 12px; color: #666;">
-                GloryKidd Technologies &middot; <a href="https://www.glorykidd.com/admin/contacts/{submission.Id}">View in Admin</a>
+                GloryKidd Technologies &middot; <a href="{SeoDefaults.BaseUrl}/admin/contacts/{submission.Id}">View in Admin</a>
               </div>
             </body>
             </html>
