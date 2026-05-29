@@ -9,7 +9,8 @@ Elusive serves as the public-facing website for GloryKidd Technologies LLC. The 
 - **Home** — Company mission, introduction video, and service highlights
 - **Portfolio** — Client testimonials and project showcases
 - **Software & Consulting** — Custom software development, security services, workflow optimization, and managed infrastructure offerings
-- **About Us** — Company overview with an embedded contact form
+- **About Us** — Company overview with a native contact form (submissions saved to SQLite)
+- **Admin** — Password-protected dashboard at `/admin` with contact submission management
 
 ## Architecture Overview
 
@@ -26,26 +27,35 @@ Pages are rendered on the server as complete HTML — search engines and crawler
 
 ```
 gkwebNew.Server/
-  Program.cs              # Server entry point and service registration
+  Program.cs              # Server entry point, auth, and DB setup
   Components/
     App.razor             # Root HTML document (head, body, scripts)
     Routes.razor          # Blazor router configuration
+    Layout/
+      AdminLayout.razor   # Admin page shell (nav + footer, no public layout)
+    Pages/Admin/
+      Dashboard.razor     # /admin — submission counts, new vs total
+      Contacts.razor      # /admin/contacts — submissions list
+      ContactDetail.razor # /admin/contacts/{id} — full detail + mark viewed
+      Login.razor         # /admin/login
   wwwroot/
     sitemap.xml           # SEO sitemap
-    robots.txt            # Crawler rules
-  web.config              # IIS hosting configuration
+    robots.txt            # Crawler rules (admin disallowed)
+  web.config              # IIS hosting + X-Frame-Options header
 
 gkwebNew/
   Components/
     SeoHead.razor         # Reusable SEO meta tags component
   Services/
     SeoMetadata.cs        # SEO data models and defaults
+  Data/
+    ContactDbContext.cs   # EF Core DbContext for contact submissions
   Layout/
     MainLayout.razor      # Page shell and footer
     NavMenu.razor         # Top navigation bar
   Pages/
     Home.razor            # /
-    About.razor           # /about
+    About.razor           # /about (contact form)
     Portfolio.razor       # /portfolio
     Software.razor        # /software
   wwwroot/                # CSS, images, favicon
@@ -53,6 +63,7 @@ gkwebNew/
 apiObjects/
   models/
     Staff.cs              # Staff data model
+    ContactSubmission.cs  # Contact form submission model
 ```
 
 ## SEO Features
@@ -72,6 +83,8 @@ apiObjects/
 - **Blazor Web App (Static SSR)** — Server-rendered pages for SEO
 - **Blazor Bootstrap 3.5** — UI component library (Card, Icon, etc.)
 - **Bootstrap 5.3** — CSS framework (loaded via CDN)
+- **Entity Framework Core + SQLite** — Contact form persistence
+- **ASP.NET Core Cookie Authentication** — Admin area access control
 - **IIS** — Production hosting via ASP.NET Core Module v2
 
 ## Getting Started
@@ -105,6 +118,19 @@ The app deploys to a self-hosted Windows runner with IIS:
 1. `dotnet publish gkwebNew.Server -c Release -o C:/www-root/glorykidd.com`
 2. IIS serves as a reverse proxy to the ASP.NET Core Kestrel process
 3. `web.config` configures the ASP.NET Core Module v2 for in-process hosting
+
+**Before deploying**, ensure `appsettings.Production.json` exists on the server with real admin credentials:
+
+```json
+{
+  "AdminAuth": {
+    "Username": "your-username",
+    "Password": "your-strong-password"
+  }
+}
+```
+
+This file is gitignored and must be managed manually on the server.
 
 CI/CD is handled via GitHub Actions workflows:
 - `gkes-develop.yml` — Builds on pushes to `develop`
