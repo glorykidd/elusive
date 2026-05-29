@@ -6,10 +6,34 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using System.Threading.RateLimiting;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddPolicy("login", ctx =>
+    {
+        var ip = ctx.Connection.RemoteIpAddress?.ToString();
+        if (string.IsNullOrEmpty(ip))
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: Guid.NewGuid().ToString(),
+                factory: _ => new FixedWindowRateLimiterOptions { PermitLimit = 0, Window = TimeSpan.FromMinutes(15) });
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ip,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(15),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            });
+    });
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+});
 
 builder.Services.AddDbContext<ContactDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("ContactDb")));
@@ -45,6 +69,7 @@ app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
+app.UseRateLimiter();
 
 app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config) =>
 {
@@ -74,7 +99,7 @@ app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config) =>
     await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
 
     return Results.Redirect("/admin");
-});
+}).RequireRateLimiting("login");
 
 app.MapGet("/admin/logout", async (HttpContext ctx) =>
 {

@@ -3,6 +3,7 @@
 @using gkweb.api.types.models
 @inject ContactDbContext Db
 @inject EmailService Email
+@inject ILogger<About> Logger
 
 <SeoHead Data="@_seo" StructuredData="@_jsonLd" />
 
@@ -131,8 +132,9 @@
             await Email.SendAdminNotificationAsync(submission);
             _submitted = true;
         }
-        catch
+        catch (Exception ex)
         {
+            Logger.LogError(ex, "Contact form submission failed");
             _submitError = true;
         }
     }
