@@ -15,15 +15,23 @@ builder.Services.AddRazorComponents();
 builder.Services.AddRateLimiter(options =>
 {
     options.AddPolicy("login", ctx =>
-        RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+    {
+        var ip = ctx.Connection.RemoteIpAddress?.ToString();
+        if (string.IsNullOrEmpty(ip))
+            return RateLimitPartition.GetFixedWindowLimiter(
+                partitionKey: Guid.NewGuid().ToString(),
+                factory: _ => new FixedWindowRateLimiterOptions { PermitLimit = 0, Window = TimeSpan.FromMinutes(15) });
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ip,
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 5,
                 Window = TimeSpan.FromMinutes(15),
                 QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
                 QueueLimit = 0
-            }));
+            });
+    });
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
