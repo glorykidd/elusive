@@ -20,6 +20,7 @@
                 }
 
                 <form method="post" action="/admin/do-login">
+                    <AntiforgeryToken />
                     <div class="mb-3">
                         <label for="admin-user" class="form-label">Username</label>
                         <input id="admin-user" name="username" class="form-control" type="text" autocomplete="username" />

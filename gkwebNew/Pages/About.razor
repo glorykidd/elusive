@@ -38,6 +38,12 @@
                         Thank you! We'll be in touch soon.
                     </div>
                 }
+                else if (_submitError)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        Something went wrong. Please try again or email us directly.
+                    </div>
+                }
                 else
                 {
                     <EditForm Model="Input" method="post" OnValidSubmit="HandleSubmit" FormName="contact" Enhance="true">
@@ -79,6 +85,7 @@
     public ContactFormModel Input { get; set; } = new();
 
     private bool _submitted;
+    private bool _submitError;
 
     private readonly SeoPageData _seo = new(
         Title: "About Us - Contact GloryKidd Technologies",
@@ -107,17 +114,24 @@
 
     private async Task HandleSubmit()
     {
-        Db.ContactSubmissions.Add(new ContactSubmission
+        try
         {
-            Name = Input.Name,
-            Email = Input.Email,
-            Phone = Input.Phone,
-            Message = Input.Message,
-            SubmittedAt = DateTime.UtcNow
-        });
+            Db.ContactSubmissions.Add(new ContactSubmission
+            {
+                Name = Input.Name,
+                Email = Input.Email,
+                Phone = Input.Phone,
+                Message = Input.Message,
+                SubmittedAt = DateTime.UtcNow
+            });
 
-        await Db.SaveChangesAsync();
-        _submitted = true;
+            await Db.SaveChangesAsync();
+            _submitted = true;
+        }
+        catch
+        {
+            _submitError = true;
+        }
     }
 
     public sealed class ContactFormModel

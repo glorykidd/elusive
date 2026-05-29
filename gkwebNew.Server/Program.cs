@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +50,17 @@ app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config) =>
     var username = form["username"].ToString();
     var password = form["password"].ToString();
 
-    if (username != config["AdminAuth:Username"] || password != config["AdminAuth:Password"])
+    var configUsername = config["AdminAuth:Username"] ?? string.Empty;
+    var configPassword = config["AdminAuth:Password"] ?? string.Empty;
+
+    var usernameMatch = CryptographicOperations.FixedTimeEquals(
+        System.Text.Encoding.UTF8.GetBytes(username),
+        System.Text.Encoding.UTF8.GetBytes(configUsername));
+    var passwordMatch = CryptographicOperations.FixedTimeEquals(
+        System.Text.Encoding.UTF8.GetBytes(password),
+        System.Text.Encoding.UTF8.GetBytes(configPassword));
+
+    if (!usernameMatch || !passwordMatch)
         return Results.Redirect("/admin/login?error=1");
 
     var claims = new List<Claim>
@@ -61,7 +72,7 @@ app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config) =>
     await ctx.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity));
 
     return Results.Redirect("/admin");
-}).DisableAntiforgery();
+});
 
 app.MapGet("/admin/logout", async (HttpContext ctx) =>
 {
