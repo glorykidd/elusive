@@ -3,6 +3,8 @@ using gkwebNew.Server.Components;
 using gkwebNew.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -12,16 +14,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddRazorComponents();
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();
+    options.KnownProxies.Clear();
+});
+
 builder.Services.AddRateLimiter(options =>
 {
     options.AddPolicy("login", ctx =>
     {
-        var ip = ctx.Connection.RemoteIpAddress?.ToString();
-        if (string.IsNullOrEmpty(ip))
-            return RateLimitPartition.GetFixedWindowLimiter(
-                partitionKey: Guid.NewGuid().ToString(),
-                factory: _ => new FixedWindowRateLimiterOptions { PermitLimit = 0, Window = TimeSpan.FromMinutes(15) });
-
+        var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
         return RateLimitPartition.GetFixedWindowLimiter(
             partitionKey: ip,
             factory: _ => new FixedWindowRateLimiterOptions
@@ -36,7 +40,9 @@ builder.Services.AddRateLimiter(options =>
 });
 
 builder.Services.AddDbContext<ContactDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("ContactDb")));
+    options.UseSqlite(
+        builder.Configuration.GetConnectionString("ContactDb"),
+        b => b.MigrationsAssembly("gkwebNew.Server")));
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -56,7 +62,7 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ContactDbContext>();
-    db.Database.EnsureCreated();
+    db.Database.Migrate();
 }
 
 if (!app.Environment.IsDevelopment())
@@ -64,6 +70,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
@@ -71,8 +78,17 @@ app.UseAuthorization();
 app.UseAntiforgery();
 app.UseRateLimiter();
 
-app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config) =>
+app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config, IAntiforgery antiforgery) =>
 {
+    try
+    {
+        await antiforgery.ValidateRequestAsync(ctx);
+    }
+    catch (AntiforgeryValidationException)
+    {
+        return Results.BadRequest("Invalid antiforgery token");
+    }
+
     var form = await ctx.Request.ReadFormAsync();
     var username = form["username"].ToString();
     var password = form["password"].ToString();
