@@ -2,6 +2,7 @@
 @using gkwebNew.Data
 @using gkweb.api.types.models
 @inject ContactDbContext Db
+@inject EmailService Email
 
 <SeoHead Data="@_seo" StructuredData="@_jsonLd" />
 
@@ -116,16 +117,18 @@
     {
         try
         {
-            Db.ContactSubmissions.Add(new ContactSubmission
+            var submission = new ContactSubmission
             {
                 Name = Input.Name,
                 Email = Input.Email,
                 Phone = Input.Phone,
                 Message = Input.Message,
                 SubmittedAt = DateTime.UtcNow
-            });
+            };
+            Db.ContactSubmissions.Add(submission);
 
             await Db.SaveChangesAsync();
+            await Email.SendAdminNotificationAsync(submission);
             _submitted = true;
         }
         catch
