@@ -16,6 +16,15 @@
         Assert.Equal(4, navLinks.Count);
     }
 
+    [Fact]
+    public void NavMenu_LinksUseNavLinkClass()
+    {
+        var cut = Render(@<NavMenu />);
+        var links = cut.FindAll("li.nav-item a");
+
+        Assert.All(links, link => Assert.Contains("nav-link", link.GetAttribute("class")));
+    }
+
     [Theory]
     [InlineData("", "Home")]
     [InlineData("/portfolio", "Portfolio")]
@@ -36,8 +45,8 @@
     {
         var cut = Render(@<NavMenu />);
         Assert.NotNull(cut.Find("a.navbar-brand"));
-        Assert.Contains("images/gk-logo-square.svg", cut.Markup);
-        Assert.Contains("images/elusive_logo.png", cut.Markup);
+        Assert.Contains("_content/gkwebNew/images/gk-logo-square.svg", cut.Markup);
+        Assert.Contains("_content/gkwebNew/images/elusive_logo.png", cut.Markup);
     }
 
     [Fact]

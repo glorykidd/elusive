@@ -1,0 +1,41 @@
+@page "/admin/login"
+@layout AdminLayout
+
+<PageTitle>Admin Login - GloryKidd Technologies</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex, nofollow" />
+</HeadContent>
+
+<h1 class="visually-hidden">Admin Login</h1>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-md-4 col-sm-12">
+        <Card>
+            <CardBody>
+                <CardTitle><i>Admin Login</i></CardTitle>
+
+                @if (Error is not null)
+                {
+                    <div class="alert alert-danger" role="alert">Invalid username or password.</div>
+                }
+
+                <form method="post" action="/admin/do-login">
+                    <div class="mb-3">
+                        <label for="admin-user" class="form-label">Username</label>
+                        <input id="admin-user" name="username" class="form-control" type="text" autocomplete="username" />
+                    </div>
+                    <div class="mb-3">
+                        <label for="admin-pass" class="form-label">Password</label>
+                        <input id="admin-pass" name="password" class="form-control" type="password" autocomplete="current-password" />
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+                </form>
+            </CardBody>
+        </Card>
+    </div>
+</div>
+
+@code {
+    [SupplyParameterFromQuery(Name = "error")]
+    public string? Error { get; set; }
+}

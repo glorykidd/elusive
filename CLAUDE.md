@@ -28,7 +28,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - UI components come from **Blazor Bootstrap** (`BlazorBootstrap` namespace) — use `Card`, `CardBody`, `CardTitle`, `CardText`, `Icon`, etc. rather than raw Bootstrap HTML
 - Bootstrap 5.3 is loaded via CDN in `App.razor`
 - Services are registered in `gkwebNew.Server/Program.cs` using `WebApplication.CreateBuilder`
-- Each page uses the `SeoHead` component with `SeoPageData` for SEO metadata
+- Each page uses the `SeoHead` component with `SeoPageData` for SEO metadata; pass `StructuredData` (raw JSON-LD string) for Organization/ProfessionalService schemas
+- `SeoDefaults` in `gkwebNew/Services/SeoMetadata.cs` holds `SiteName`, `BaseUrl`, and `DefaultOgImage`
 
 ## Anti-Patterns
 - Do not duplicate Bootstrap CSS references — CDN is already loaded in `App.razor`
@@ -44,6 +45,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `ASPNETCORE_ENVIRONMENT` is set to `Development` in launch profiles
 - IIS hosting configured via `gkwebNew.Server/web.config` (ASP.NET Core Module v2, InProcess)
 
+## Testing
+- Tests are bUnit + xUnit `.razor` files in `gkwebNew.Tests/Components/`; test classes inherit `TestContext`
+- Model tests are plain xUnit `.cs` files in `gkwebNew.Tests/Models/`
+- Tests assert against rendered markup strings or locate components/elements directly
+
+## Styling
+- Component-scoped CSS uses `.razor.css` co-located files (e.g., `NavMenu.razor.css`, `Home.razor.css`) — Blazor automatically scopes these styles to the component
+
+## Git Workflow
+- PRs target `develop`; pushing to `develop` triggers `gkes-develop.yml` (build + test + email notification, no deploy)
+- Pushing to `main` triggers `gkes.yml` (build + test + publish to `C:/www-root/glorykidd.com` on the self-hosted IIS runner)
+- Feature branches should be cut from `develop` with the `feature/` prefix
+
 ## Commands & Scripts
 
 ```bash
@@ -56,6 +70,9 @@ dotnet build gkweb.new.sln
 # Run the app (http://localhost:5194 or https://localhost:7117)
 dotnet run --project gkwebNew.Server/gkwebNew.Server.csproj
 
-# Run tests
+# Run all tests
 dotnet test gkwebNew.Tests/gkwebNew.Tests.csproj
+
+# Run a single test by name
+dotnet test gkwebNew.Tests/gkwebNew.Tests.csproj --filter "FullyQualifiedName~Home_RendersLogoImage"
 ```
