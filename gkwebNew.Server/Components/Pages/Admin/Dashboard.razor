@@ -1,0 +1,75 @@
+@page "/admin"
+@layout AdminLayout
+@using gkwebNew.Data
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize]
+@inject ContactDbContext Db
+
+<PageTitle>Admin Dashboard - GloryKidd Technologies</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex, nofollow" />
+</HeadContent>
+
+<h1 class="visually-hidden">Admin Dashboard</h1>
+
+<div class="row mb-4">
+    <div class="col">
+        <h2><i>Dashboard</i></h2>
+    </div>
+    <div class="col-auto">
+        <a href="/admin/logout" class="btn btn-outline-secondary btn-sm">Logout</a>
+    </div>
+</div>
+
+<div class="row g-3">
+    <div class="col-md-4 col-sm-12">
+        <a href="/admin/contacts" class="text-decoration-none">
+            <div class="card h-100 @(_newSubmissions > 0 ? "border-warning" : "border-primary")">
+                <div class="card-body">
+                    <h5 class="card-title @(_newSubmissions > 0 ? "text-warning" : "text-primary")">
+                        <Icon Name="IconName.Envelope" />&nbsp; Contact Submissions
+                        @if (_newSubmissions > 0)
+                        {
+                            <span class="badge bg-warning text-dark ms-2">@_newSubmissions New</span>
+                        }
+                    </h5>
+                    <p class="display-6 mb-1">
+                        @_newSubmissions <small class="fs-6 text-muted">new</small>
+                        <span class="text-muted fs-5 mx-1">/</span>
+                        @_totalSubmissions <small class="fs-6 text-muted">total</small>
+                    </p>
+                    <p class="text-muted small mb-0">
+                        @if (_latestSubmission is not null)
+                        {
+                            <span>Latest: @_latestSubmission.Value.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</span>
+                        }
+                        else
+                        {
+                            <span>No submissions yet</span>
+                        }
+                    </p>
+                </div>
+                <div class="card-footer @(_newSubmissions > 0 ? "text-warning" : "text-primary") small">
+                    View all &rarr;
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+@code {
+    private int _totalSubmissions;
+    private int _newSubmissions;
+    private DateTime? _latestSubmission;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _totalSubmissions = await Db.ContactSubmissions.CountAsync();
+        _newSubmissions = await Db.ContactSubmissions.CountAsync(s => s.ViewedAt == null);
+        _latestSubmission = await Db.ContactSubmissions
+            .OrderByDescending(s => s.SubmittedAt)
+            .Select(s => (DateTime?)s.SubmittedAt)
+            .FirstOrDefaultAsync();
+    }
+}

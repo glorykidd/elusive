@@ -12,14 +12,16 @@
     public void Software_RendersDigitalStrategyHeading()
     {
         var cut = Render(@<Software />);
-        Assert.Contains("Define Your Digital Strategy", cut.Markup);
+        var heading = cut.FindAll("h2").FirstOrDefault(h => h.TextContent.Contains("Define Your Digital Strategy"));
+        Assert.NotNull(heading);
     }
 
     [Fact]
     public void Software_RendersRaiseYourTeamHeading()
     {
         var cut = Render(@<Software />);
-        Assert.Contains("Raise Your Team", cut.Markup);
+        var heading = cut.FindAll("h2").FirstOrDefault(h => h.TextContent.Contains("Raise Your Team"));
+        Assert.NotNull(heading);
     }
 
     [Theory]

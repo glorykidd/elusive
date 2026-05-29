@@ -1,6 +1,10 @@
-﻿@page "/about"
+@page "/about"
+@using gkwebNew.Data
+@using gkweb.api.types.models
+@inject ContactDbContext Db
+@inject EmailService Email
 
-<SeoHead Data="@_seo" />
+<SeoHead Data="@_seo" StructuredData="@_jsonLd" />
 
 <h1 class="visually-hidden">About GloryKidd Technologies</h1>
 
@@ -25,18 +29,131 @@
         </Card>
     </div>
     <div class="col-md-8 col-sm-12">
-        <iframe
-            style="width: 100%; height: 800px; border-radius: 25px;"
-            class="embed-responsive-item"
-            src="https://forms.gle/x1k9aoHskYJ1A7VB7"
-            allowfullscreen></iframe>
+        <Card Style="border: 0px;">
+            <CardBody>
+                <CardTitle><i>Get In Touch</i></CardTitle>
+
+                @if (_submitted)
+                {
+                    <div class="alert alert-success" role="alert">
+                        Thank you! We'll be in touch soon.
+                    </div>
+                }
+                else if (_submitError)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        Something went wrong. Please try again or email us directly.
+                    </div>
+                }
+                else
+                {
+                    <EditForm Model="Input" method="post" OnValidSubmit="HandleSubmit" FormName="contact" Enhance="true">
+                        <DataAnnotationsValidator />
+
+                        <div class="mb-3">
+                            <label for="contact-name" class="form-label">Name <span class="text-danger">*</span></label>
+                            <InputText id="contact-name" class="form-control" @bind-Value="Input.Name" placeholder="Your name" />
+                            <ValidationMessage For="() => Input.Name" class="text-danger small" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="contact-email" class="form-label">Email <span class="text-danger">*</span></label>
+                            <InputText id="contact-email" class="form-control" @bind-Value="Input.Email" placeholder="you@example.com" />
+                            <ValidationMessage For="() => Input.Email" class="text-danger small" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="contact-phone" class="form-label">Phone</label>
+                            <InputText id="contact-phone" class="form-control" @bind-Value="Input.Phone" placeholder="Optional" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="contact-message" class="form-label">Message <span class="text-danger">*</span></label>
+                            <InputTextArea id="contact-message" class="form-control" @bind-Value="Input.Message" rows="5" placeholder="How can we help?" />
+                            <ValidationMessage For="() => Input.Message" class="text-danger small" />
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </EditForm>
+                }
+            </CardBody>
+        </Card>
     </div>
 </div>
 
 @code {
+    [SupplyParameterFromForm(FormName = "contact")]
+    public ContactFormModel Input { get; set; } = new();
+
+    private bool _submitted;
+    private bool _submitError;
+
     private readonly SeoPageData _seo = new(
         Title: "About Us - Contact GloryKidd Technologies",
         Description: "Learn about GloryKidd Technologies and our mission to deliver practical IT solutions with excellence. Contact us to discuss your project needs.",
         CanonicalUrl: $"{SeoDefaults.BaseUrl}/about"
     );
+
+    private readonly string _jsonLd = """
+        {
+            "@context": "https://schema.org",
+            "@type": "ContactPage",
+            "name": "Contact GloryKidd Technologies",
+            "url": "https://www.glorykidd.com/about",
+            "description": "Contact GloryKidd Technologies to discuss your software development or IT consulting needs.",
+            "mainEntity": {
+                "@type": "Organization",
+                "name": "GloryKidd Technologies LLC",
+                "url": "https://www.glorykidd.com",
+                "contactPoint": {
+                    "@type": "ContactPoint",
+                    "contactType": "customer service"
+                }
+            }
+        }
+        """;
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            var submission = new ContactSubmission
+            {
+                Name = Input.Name,
+                Email = Input.Email,
+                Phone = Input.Phone,
+                Message = Input.Message,
+                SubmittedAt = DateTime.UtcNow
+            };
+            Db.ContactSubmissions.Add(submission);
+
+            await Db.SaveChangesAsync();
+            await Email.SendAdminNotificationAsync(submission);
+            _submitted = true;
+        }
+        catch
+        {
+            _submitError = true;
+        }
+    }
+
+    public sealed class ContactFormModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Name is required")]
+        [System.ComponentModel.DataAnnotations.StringLength(100)]
+        public string Name { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email is required")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Enter a valid email address")]
+        [System.ComponentModel.DataAnnotations.StringLength(200)]
+        public string Email { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Phone(ErrorMessage = "Enter a valid phone number")]
+        [System.ComponentModel.DataAnnotations.StringLength(30)]
+        public string? Phone { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Message is required")]
+        [System.ComponentModel.DataAnnotations.StringLength(2000)]
+        public string Message { get; set; } = string.Empty;
+    }
 }

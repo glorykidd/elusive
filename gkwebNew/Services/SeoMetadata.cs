@@ -12,5 +12,5 @@ public static class SeoDefaults
 {
     public const string SiteName = "GloryKidd Technologies";
     public const string BaseUrl = "https://www.glorykidd.com";
-    public const string DefaultOgImage = "https://www.glorykidd.com/images/gk-logo-square.svg";
+    public const string DefaultOgImage = "https://www.glorykidd.com/_content/gkwebNew/images/gk-logo-square.svg";
 }

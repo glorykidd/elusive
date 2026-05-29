@@ -1,0 +1,99 @@
+@page "/admin/contacts/{Id:int}"
+@layout AdminLayout
+@using gkwebNew.Data
+@using gkweb.api.types.models
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.EntityFrameworkCore
+@attribute [Authorize]
+@inject ContactDbContext Db
+
+<PageTitle>Contact Detail - Admin</PageTitle>
+<HeadContent>
+    <meta name="robots" content="noindex, nofollow" />
+</HeadContent>
+
+<h1 class="visually-hidden">Contact Detail</h1>
+
+<div class="row mb-3">
+    <div class="col">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/admin">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="/admin/contacts">Contact Submissions</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Detail</li>
+            </ol>
+        </nav>
+        <h2><i>Submission Detail</i></h2>
+    </div>
+    <div class="col-auto">
+        <a href="/admin/logout" class="btn btn-outline-secondary btn-sm">Logout</a>
+    </div>
+</div>
+
+@if (_submission is null)
+{
+    <p class="text-muted">Submission not found.</p>
+}
+else
+{
+    <div class="row">
+        <div class="col-md-6 col-sm-12">
+            <div class="card">
+                <div class="card-body">
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Date</dt>
+                        <dd class="col-sm-8">@_submission.SubmittedAt.ToLocalTime().ToString("MMM d, yyyy h:mm tt")</dd>
+
+                        <dt class="col-sm-4">Name</dt>
+                        <dd class="col-sm-8">@_submission.Name</dd>
+
+                        <dt class="col-sm-4">Email</dt>
+                        <dd class="col-sm-8"><a href="mailto:@_submission.Email">@_submission.Email</a></dd>
+
+                        <dt class="col-sm-4">Phone</dt>
+                        <dd class="col-sm-8">
+                            @if (_submission.Phone is not null)
+                            {
+                                <a href="tel:@_submission.Phone">@_submission.Phone</a>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card mt-3">
+                <div class="card-header">Message</div>
+                <div class="card-body">
+                    <p style="white-space: pre-wrap;">@_submission.Message</p>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <a href="/admin/contacts" class="btn btn-outline-secondary">&larr; Back to list</a>
+                <a href="mailto:@_submission.Email?subject=Re: Your Inquiry" class="btn btn-primary ms-2">
+                    <Icon Name="IconName.Reply" />&nbsp; Reply
+                </a>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int Id { get; set; }
+
+    private ContactSubmission? _submission;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _submission = await Db.ContactSubmissions.FindAsync(Id);
+        if (_submission is not null && _submission.ViewedAt is null)
+        {
+            _submission.ViewedAt = DateTime.UtcNow;
+            await Db.SaveChangesAsync();
+        }
+    }
+}
