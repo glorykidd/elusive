@@ -62,6 +62,6 @@
     public void Home_RendersLogoImage()
     {
         var cut = Render(@<Home />);
-        Assert.Contains("images/gk-logo-square.svg", cut.Markup);
+        Assert.Contains("_content/gkwebNew/images/gk-logo-square.svg", cut.Markup);
     }
 }

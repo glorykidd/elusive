@@ -1,6 +1,6 @@
 ﻿@page "/portfolio"
 
-<SeoHead Data="@_seo" />
+<SeoHead Data="@_seo" StructuredData="@_jsonLd" />
 
 <h1 class="visually-hidden">Portfolio - Client Testimonials</h1>
 
@@ -86,4 +86,29 @@
         Description: "See what our clients say about GloryKidd Technologies. Read testimonials from Turley Richards, Advent Financial Systems, and more.",
         CanonicalUrl: $"{SeoDefaults.BaseUrl}/portfolio"
     );
+
+    private readonly string _jsonLd = """
+        {
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            "name": "Client Testimonials",
+            "description": "Testimonials from GloryKidd Technologies clients",
+            "itemListElement": [
+                {
+                    "@type": "Review",
+                    "position": 1,
+                    "author": { "@type": "Person", "name": "Turley Richards" },
+                    "reviewBody": "I have never worked with anyone quite as professional and detail oriented as David.",
+                    "itemReviewed": { "@type": "Organization", "name": "GloryKidd Technologies" }
+                },
+                {
+                    "@type": "Review",
+                    "position": 2,
+                    "author": { "@type": "Person", "name": "Jennifer Hobbs", "jobTitle": "Director of Technology", "worksFor": { "@type": "Organization", "name": "Advent Financial Systems" } },
+                    "reviewBody": "Advent and Glorykidd have been working together for more than ten years.",
+                    "itemReviewed": { "@type": "Organization", "name": "GloryKidd Technologies" }
+                }
+            ]
+        }
+        """;
 }

@@ -12,6 +12,8 @@
         Assert.Contains("Proverbs 22:29", cut.Markup);
         Assert.Contains("GloryKidd Technologies LLC", cut.Markup);
         Assert.Contains("Copyright", cut.Markup);
+        var adminLink = cut.FindAll("footer a").First(a => a.TextContent.Trim() == "Admin");
+        Assert.Equal("/admin", adminLink.GetAttribute("href"));
     }
 
     [Fact]
