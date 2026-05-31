@@ -60,7 +60,7 @@ builder.Services.AddHttpContextAccessor();
 var app = builder.Build();
 
 var emailLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("EmailConfiguration");
-var emailKeys = new[] { "Email:SmtpHost", "Email:FromAddress", "Email:Username", "Email:Password", "Email:AdminNotificationAddress" };
+var emailKeys = new[] { "Email:SmtpHost", "Email:SmtpPort", "Email:FromAddress", "Email:Username", "Email:Password", "Email:AdminNotificationAddress" };
 if (emailKeys.Any(k => string.IsNullOrWhiteSpace(app.Configuration[k]) || (app.Configuration[k]?.Contains("REPLACE_IN_PRODUCTION") ?? false)))
     emailLogger.LogWarning("Email is not fully configured — contact form notifications will not be sent. Check Email:* settings in appsettings.Production.json.");
 
