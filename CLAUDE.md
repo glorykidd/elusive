@@ -49,7 +49,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - `ASPNETCORE_ENVIRONMENT` is set to `Development` in launch profiles
 - IIS hosting configured via `gkwebNew.Server/web.config` (ASP.NET Core Module v2, InProcess)
 - Admin credentials (`AdminAuth:Username`, `AdminAuth:Password`) must be set in `appsettings.Production.json` on the server — `appsettings.json` only contains `REPLACE_IN_PRODUCTION` placeholders
+- Email sending requires `Email:SmtpHost`, `Email:SmtpPort`, `Email:Username`, `Email:Password`, `Email:FromAddress`, and `Email:AdminNotificationAddress` in `appsettings.Production.json`; if any are missing the app logs a warning on startup and skips sending
 - `appsettings.Production.json` and `*.db` files are gitignored — never commit them
+- IIS stdout logging is enabled (`web.config`: `stdoutLogEnabled="true"`); logs are written to `logs/stdout*.log` under the deploy root; the `logs/` directory is created by the deployment workflow
 
 ## Anti-Patterns (additional)
 - Do not use `@onclick` for navigation in Static SSR pages — it requires an interactive render mode; use `<a href>` links instead
