@@ -18,7 +18,8 @@
       "Bash(sqlite3 *)",
       "Bash(git *)",
       "Bash(gh pr *)",
-      "Bash(dotnet ef migrations *)"
+      "Bash(dotnet ef migrations *)",
+      "Bash(gh issue *)"
     ]
   },
   "disabledMcpjsonServers": [

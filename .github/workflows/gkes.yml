@@ -87,6 +87,8 @@ jobs:
         run: |
           cd gkwebNew.Server
           dotnet publish -c Release -o C:/www-root/glorykidd.com
+      - name: Ensure logs directory exists
+        run: New-Item -ItemType Directory -Path "C:/www-root/glorykidd.com/logs" -Force
       - name: Start IIS app pool after deploy
         run: |
           Import-Module WebAdministration

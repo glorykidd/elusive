@@ -119,18 +119,29 @@ The app deploys to a self-hosted Windows runner with IIS:
 2. IIS serves as a reverse proxy to the ASP.NET Core Kestrel process
 3. `web.config` configures the ASP.NET Core Module v2 for in-process hosting
 
-**Before deploying**, ensure `appsettings.Production.json` exists on the server with real admin credentials:
+**Before deploying**, ensure `appsettings.Production.json` exists on the server with real credentials and SMTP settings:
 
 ```json
 {
   "AdminAuth": {
     "Username": "your-username",
     "Password": "your-strong-password"
+  },
+  "Email": {
+    "SmtpHost": "smtp.example.com",
+    "SmtpPort": "587",
+    "Username": "smtp-username",
+    "Password": "smtp-password",
+    "FromAddress": "noreply@example.com",
+    "FromName": "GloryKidd Technologies",
+    "AdminNotificationAddress": "admin@example.com"
   }
 }
 ```
 
-This file is gitignored and must be managed manually on the server.
+This file is gitignored and must be managed manually on the server. If any `Email:*` key is missing or unpopulated, the app will log a warning on startup and contact form notifications will not be sent.
+
+**Logs** are written to `C:/www-root/glorykidd.com/logs/stdout*.log` (IIS stdout logging, enabled in `web.config`).
 
 CI/CD is handled via GitHub Actions workflows:
 - `gkes-develop.yml` — Builds on pushes to `develop`
