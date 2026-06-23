@@ -1,6 +1,7 @@
 @inherits TestContext
 @using gkwebNew.Data
 @using gkwebNew.Services
+@using Microsoft.AspNetCore.Http
 @using Microsoft.EntityFrameworkCore
 @using Microsoft.Extensions.DependencyInjection
 @using Microsoft.Extensions.Configuration
@@ -15,10 +16,20 @@
         db.Database.EnsureCreated();
         Services.AddSingleton(db);
 
+        var config = new ConfigurationBuilder().Build();
+
         var emailService = new EmailService(
-            new ConfigurationBuilder().Build(),
+            config,
             LoggerFactory.Create(_ => { }).CreateLogger<EmailService>());
         Services.AddSingleton<EmailService>(emailService);
+
+        var recaptchaService = new RecaptchaService(
+            config,
+            LoggerFactory.Create(_ => { }).CreateLogger<RecaptchaService>());
+        Services.AddSingleton<RecaptchaService>(recaptchaService);
+
+        var httpContextAccessor = new HttpContextAccessor { HttpContext = new DefaultHttpContext() };
+        Services.AddSingleton<IHttpContextAccessor>(httpContextAccessor);
     }
 
     [Fact]
