@@ -32,7 +32,24 @@
 
     @if (Configuration["Recaptcha:SiteKey"] is string recaptchaSiteKey && !string.IsNullOrWhiteSpace(recaptchaSiteKey) && !recaptchaSiteKey.Contains("REPLACE_IN_PRODUCTION"))
     {
-        <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+        <script>
+            function renderRecaptchaWidgets() {
+                document.querySelectorAll('.g-recaptcha').forEach(function (el) {
+                    if (el.childElementCount === 0) {
+                        grecaptcha.render(el, { sitekey: el.dataset.sitekey });
+                    }
+                });
+            }
+            function recaptchaOnload() {
+                renderRecaptchaWidgets();
+                // Retry once after a short delay in case Static SSR content lands after onload fires
+                setTimeout(renderRecaptchaWidgets, 300);
+            }
+            document.addEventListener('enhancedload', function () {
+                if (typeof grecaptcha !== 'undefined') renderRecaptchaWidgets();
+            });
+        </script>
+        <script src="https://www.google.com/recaptcha/api.js?onload=recaptchaOnload&render=explicit" async defer></script>
     }
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
     <script src="_content/Blazor.Bootstrap/blazor.bootstrap.js"></script>
