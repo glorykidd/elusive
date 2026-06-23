@@ -92,6 +92,11 @@ jobs:
               exit 1
             }
           }
+          # Kill any lingering w3wp.exe process for this app pool that may still hold file locks
+          Get-CimInstance -Namespace "root\WebAdministration" -ClassName WorkerProcess -ErrorAction SilentlyContinue |
+            Where-Object { $_.AppPoolName -eq "ElusiveSoftware" } |
+            ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
+          Start-Sleep -Seconds 2
       - name: Deploy New Code
         run: |
           cd gkwebNew.Server
