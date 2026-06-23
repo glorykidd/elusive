@@ -36,7 +36,7 @@
             function renderRecaptchaWidgets() {
                 document.querySelectorAll('.g-recaptcha').forEach(function (el) {
                     if (el.childElementCount === 0) {
-                        try { grecaptcha.render(el, { sitekey: el.dataset.sitekey }); } catch (e) {}
+                        try { grecaptcha.render(el, { sitekey: el.dataset.sitekey }); } catch (e) { console.error('reCAPTCHA render failed:', e); }
                     }
                 });
             }
