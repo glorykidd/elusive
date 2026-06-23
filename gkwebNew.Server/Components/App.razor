@@ -36,7 +36,7 @@
             function renderRecaptchaWidgets() {
                 document.querySelectorAll('.g-recaptcha').forEach(function (el) {
                     if (el.childElementCount === 0) {
-                        grecaptcha.render(el, { sitekey: el.dataset.sitekey });
+                        try { grecaptcha.render(el, { sitekey: el.dataset.sitekey }); } catch (e) {}
                     }
                 });
             }
@@ -45,9 +45,12 @@
                 // Retry once after a short delay in case Static SSR content lands after onload fires
                 setTimeout(renderRecaptchaWidgets, 300);
             }
-            document.addEventListener('enhancedload', function () {
-                if (typeof grecaptcha !== 'undefined') renderRecaptchaWidgets();
-            });
+            if (!window._recaptchaEnhancedLoadBound) {
+                window._recaptchaEnhancedLoadBound = true;
+                document.addEventListener('enhancedload', function () {
+                    if (typeof grecaptcha !== 'undefined') renderRecaptchaWidgets();
+                });
+            }
         </script>
         <script src="https://www.google.com/recaptcha/api.js?onload=recaptchaOnload&render=explicit" async defer></script>
     }
