@@ -1,8 +1,12 @@
 @page "/about"
 @using gkwebNew.Data
+@using gkwebNew.Services
 @using gkweb.api.types.models
+@using Microsoft.AspNetCore.Http
 @inject ContactDbContext Db
 @inject EmailService Email
+@inject RecaptchaService Recaptcha
+@inject IHttpContextAccessor HttpContextAccessor
 @inject ILogger<About> Logger
 
 <SeoHead Data="@_seo" StructuredData="@_jsonLd" />
@@ -74,6 +78,17 @@
                             <ValidationMessage For="() => Input.Message" class="text-danger small" />
                         </div>
 
+                        @if (Recaptcha.IsConfigured)
+                        {
+                            <div class="mb-3">
+                                <div class="g-recaptcha" data-sitekey="@Recaptcha.SiteKey"></div>
+                                @if (_recaptchaError)
+                                {
+                                    <div class="text-danger small mt-1">Please complete the reCAPTCHA and try again.</div>
+                                }
+                            </div>
+                        }
+
                         <button type="submit" class="btn btn-primary">Send Message</button>
                     </EditForm>
                 }
@@ -88,6 +103,7 @@
 
     private bool _submitted;
     private bool _submitError;
+    private bool _recaptchaError;
 
     private readonly SeoPageData _seo = new(
         Title: "About Us - Contact GloryKidd Technologies",
@@ -118,6 +134,13 @@
     {
         try
         {
+            var token = HttpContextAccessor.HttpContext?.Request.Form["g-recaptcha-response"].ToString() ?? string.Empty;
+            if (!await Recaptcha.VerifyAsync(token))
+            {
+                _recaptchaError = true;
+                return;
+            }
+
             var submission = new ContactSubmission
             {
                 Name = Input.Name,
