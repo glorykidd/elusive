@@ -6,7 +6,7 @@ namespace gkwebNew.Services;
 
 public class RecaptchaService(IConfiguration configuration, ILogger<RecaptchaService> logger)
 {
-    private static readonly HttpClient _http = new();
+    private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(10) };
     private const string VerifyUrl = "https://www.google.com/recaptcha/api/siteverify";
 
     public string SiteKey => configuration["Recaptcha:SiteKey"] ?? string.Empty;

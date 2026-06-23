@@ -132,6 +132,7 @@
 
     private async Task HandleSubmit()
     {
+        _recaptchaError = false;
         try
         {
             var token = HttpContextAccessor.HttpContext?.Request.Form["g-recaptcha-response"].ToString() ?? string.Empty;
