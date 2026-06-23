@@ -28,7 +28,7 @@
             LoggerFactory.Create(_ => { }).CreateLogger<RecaptchaService>());
         Services.AddSingleton<RecaptchaService>(recaptchaService);
 
-        var httpContextAccessor = new HttpContextAccessor();
+        var httpContextAccessor = new HttpContextAccessor { HttpContext = new DefaultHttpContext() };
         Services.AddSingleton<IHttpContextAccessor>(httpContextAccessor);
     }
 
