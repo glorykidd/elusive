@@ -39,7 +39,7 @@
             }
             document.addEventListener('enhancedload', function () {
                 var el = document.querySelector('.g-recaptcha');
-                if (el && typeof grecaptcha !== 'undefined') {
+                if (el && typeof grecaptcha !== 'undefined' && el.childElementCount === 0) {
                     grecaptcha.render(el, { sitekey: el.dataset.sitekey });
                 }
             });
