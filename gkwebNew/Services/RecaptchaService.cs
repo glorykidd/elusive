@@ -13,6 +13,7 @@ public class RecaptchaService(IConfiguration configuration, ILogger<RecaptchaSer
 
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(configuration["Recaptcha:SiteKey"]) &&
+        !(configuration["Recaptcha:SiteKey"]?.Contains("REPLACE_IN_PRODUCTION") ?? false) &&
         !string.IsNullOrWhiteSpace(configuration["Recaptcha:SecretKey"]) &&
         !(configuration["Recaptcha:SecretKey"]?.Contains("REPLACE_IN_PRODUCTION") ?? false);
 

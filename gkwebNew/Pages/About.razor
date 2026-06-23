@@ -135,7 +135,14 @@
         _recaptchaError = false;
         try
         {
-            var token = HttpContextAccessor.HttpContext?.Request.Form["g-recaptcha-response"].ToString() ?? string.Empty;
+            var httpContext = HttpContextAccessor.HttpContext;
+            if (httpContext is null)
+            {
+                Logger.LogError("HttpContext is null during contact form submission — page must use Static SSR rendering.");
+                _submitError = true;
+                return;
+            }
+            var token = httpContext.Request.Form["g-recaptcha-response"].ToString();
             if (!await Recaptcha.VerifyAsync(token))
             {
                 _recaptchaError = true;
