@@ -93,8 +93,9 @@ jobs:
             }
           }
           # Kill any lingering w3wp.exe process for this app pool that may still hold file locks
-          $workerPid = (Get-WmiObject -Class WorkerProcess -Namespace "root\WebAdministration" -ErrorAction SilentlyContinue | Where-Object { $_.AppPoolName -eq "ElusiveSoftware" }).ProcessId
-          if ($workerPid) { Stop-Process -Id $workerPid -Force -ErrorAction SilentlyContinue }
+          Get-CimInstance -Namespace "root\WebAdministration" -ClassName WorkerProcess -ErrorAction SilentlyContinue |
+            Where-Object { $_.AppPoolName -eq "ElusiveSoftware" } |
+            ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
           Start-Sleep -Seconds 2
       - name: Deploy New Code
         run: |
