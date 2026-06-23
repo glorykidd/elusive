@@ -185,7 +185,12 @@
 
         [System.ComponentModel.DataAnnotations.Phone(ErrorMessage = "Enter a valid phone number")]
         [System.ComponentModel.DataAnnotations.StringLength(30)]
-        public string? Phone { get; set; }
+        public string? Phone
+        {
+            get => _phone;
+            set => _phone = string.IsNullOrWhiteSpace(value) ? null : value;
+        }
+        private string? _phone;
 
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Message is required")]
         [System.ComponentModel.DataAnnotations.StringLength(2000)]
