@@ -92,6 +92,9 @@ jobs:
               exit 1
             }
           }
+          # Kill any lingering w3wp.exe processes that may still hold file locks
+          Get-Process -Name "w3wp" -ErrorAction SilentlyContinue | Stop-Process -Force
+          Start-Sleep -Seconds 2
       - name: Deploy New Code
         run: |
           cd gkwebNew.Server
