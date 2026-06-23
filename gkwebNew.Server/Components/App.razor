@@ -33,15 +33,20 @@
     @if (Configuration["Recaptcha:SiteKey"] is string recaptchaSiteKey && !string.IsNullOrWhiteSpace(recaptchaSiteKey) && !recaptchaSiteKey.Contains("REPLACE_IN_PRODUCTION"))
     {
         <script>
+            function renderRecaptchaWidgets() {
+                document.querySelectorAll('.g-recaptcha').forEach(function (el) {
+                    if (el.childElementCount === 0) {
+                        grecaptcha.render(el, { sitekey: el.dataset.sitekey });
+                    }
+                });
+            }
             function recaptchaOnload() {
-                var el = document.querySelector('.g-recaptcha');
-                if (el) grecaptcha.render(el, { sitekey: el.dataset.sitekey });
+                renderRecaptchaWidgets();
+                // Retry once after a short delay in case Static SSR content lands after onload fires
+                setTimeout(renderRecaptchaWidgets, 300);
             }
             document.addEventListener('enhancedload', function () {
-                var el = document.querySelector('.g-recaptcha');
-                if (el && typeof grecaptcha !== 'undefined' && el.childElementCount === 0) {
-                    grecaptcha.render(el, { sitekey: el.dataset.sitekey });
-                }
+                if (typeof grecaptcha !== 'undefined') renderRecaptchaWidgets();
             });
         </script>
         <script src="https://www.google.com/recaptcha/api.js?onload=recaptchaOnload&render=explicit" async defer></script>
