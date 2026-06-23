@@ -98,8 +98,10 @@
 </div>
 
 @code {
+#pragma warning disable BL0008
     [SupplyParameterFromForm(FormName = "contact")]
     public ContactFormModel Input { get; set; } = new();
+#pragma warning restore BL0008
 
     private bool _submitted;
     private bool _submitError;
