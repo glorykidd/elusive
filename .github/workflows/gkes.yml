@@ -83,11 +83,11 @@ jobs:
             Stop-WebAppPool -Name "ElusiveSoftware"
             $timeout = 30
             $elapsed = 0
-            while ((Get-WebAppPoolState -Name "ElusiveSoftware").Value -ne "Stopped" -and $elapsed -lt $timeout) {
+            while ((Get-WebAppPoolState -Name "ElusiveSoftware" -ErrorAction SilentlyContinue).Value -ne "Stopped" -and $elapsed -lt $timeout) {
               Start-Sleep -Seconds 1
               $elapsed++
             }
-            if ((Get-WebAppPoolState -Name "ElusiveSoftware").Value -ne "Stopped") {
+            if ((Get-WebAppPoolState -Name "ElusiveSoftware" -ErrorAction SilentlyContinue).Value -ne "Stopped") {
               Write-Error "App pool did not stop within $timeout seconds"
               exit 1
             }
