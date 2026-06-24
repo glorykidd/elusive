@@ -34,6 +34,7 @@
     {
         <script>
             function renderRecaptchaWidgets() {
+                if (typeof grecaptcha === 'undefined') return;
                 document.querySelectorAll('.g-recaptcha').forEach(function (el) {
                     if (el.childElementCount === 0) {
                         try { grecaptcha.render(el, { sitekey: el.dataset.sitekey }); } catch (e) { console.error('reCAPTCHA render failed:', e); }
@@ -42,14 +43,18 @@
             }
             function recaptchaOnload() {
                 renderRecaptchaWidgets();
-                // Retry once after a short delay in case Static SSR content lands after onload fires
-                setTimeout(renderRecaptchaWidgets, 300);
-            }
-            if (!window._recaptchaEnhancedLoadBound) {
-                window._recaptchaEnhancedLoadBound = true;
-                document.addEventListener('enhancedload', function () {
-                    if (typeof grecaptcha !== 'undefined') renderRecaptchaWidgets();
-                });
+                if (!window._recaptchaMutationObserver) {
+                    window._recaptchaMutationObserver = new MutationObserver(function () {
+                        renderRecaptchaWidgets();
+                        // Disconnect once all widgets on the page are rendered
+                        if (document.querySelectorAll('.g-recaptcha').length > 0 &&
+                            Array.from(document.querySelectorAll('.g-recaptcha')).every(function (el) { return el.childElementCount > 0; })) {
+                            window._recaptchaMutationObserver.disconnect();
+                            window._recaptchaMutationObserver = null;
+                        }
+                    });
+                    window._recaptchaMutationObserver.observe(document.body, { childList: true, subtree: true });
+                }
             }
         </script>
         <script src="https://www.google.com/recaptcha/api.js?onload=recaptchaOnload&render=explicit" async defer></script>

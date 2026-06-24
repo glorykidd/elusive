@@ -56,8 +56,9 @@ nunit-*.xml
 # Claude
 .claude/settings.local.json
 
-# Production secrets — managed on the server, never committed
+# Environment-specific secrets — never committed
 appsettings.Production.json
+appsettings.Development.json
 
 # SQLite database files
 *.db
