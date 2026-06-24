@@ -46,7 +46,7 @@
                 window._recaptchaMutationObserver = new MutationObserver(function () {
                     renderRecaptchaWidgets();
                     var els = document.querySelectorAll('.g-recaptcha');
-                    if (els.length > 0 && Array.from(els).every(function (el) { return el.childElementCount > 0; })) {
+                    if (els.length === 0 || Array.from(els).every(function (el) { return el.childElementCount > 0; })) {
                         window._recaptchaMutationObserver.disconnect();
                         window._recaptchaMutationObserver = null;
                     }
