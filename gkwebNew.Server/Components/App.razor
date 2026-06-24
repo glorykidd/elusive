@@ -34,21 +34,34 @@
     {
         <script>
             function renderRecaptchaWidgets() {
+                if (typeof grecaptcha === 'undefined') return;
                 document.querySelectorAll('.g-recaptcha').forEach(function (el) {
                     if (el.childElementCount === 0) {
                         try { grecaptcha.render(el, { sitekey: el.dataset.sitekey }); } catch (e) { console.error('reCAPTCHA render failed:', e); }
                     }
                 });
             }
+            function startRecaptchaObserver() {
+                if (window._recaptchaMutationObserver) return;
+                window._recaptchaMutationObserver = new MutationObserver(function () {
+                    renderRecaptchaWidgets();
+                    var els = document.querySelectorAll('.g-recaptcha');
+                    if (els.length === 0 || Array.from(els).every(function (el) { return el.childElementCount > 0; })) {
+                        window._recaptchaMutationObserver.disconnect();
+                        window._recaptchaMutationObserver = null;
+                    }
+                });
+                window._recaptchaMutationObserver.observe(document.body, { childList: true, subtree: true });
+            }
             function recaptchaOnload() {
                 renderRecaptchaWidgets();
-                // Retry once after a short delay in case Static SSR content lands after onload fires
-                setTimeout(renderRecaptchaWidgets, 300);
+                startRecaptchaObserver();
             }
             if (!window._recaptchaEnhancedLoadBound) {
                 window._recaptchaEnhancedLoadBound = true;
                 document.addEventListener('enhancedload', function () {
-                    if (typeof grecaptcha !== 'undefined') renderRecaptchaWidgets();
+                    renderRecaptchaWidgets();
+                    startRecaptchaObserver();
                 });
             }
         </script>
