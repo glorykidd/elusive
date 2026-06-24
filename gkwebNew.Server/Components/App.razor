@@ -41,20 +41,28 @@
                     }
                 });
             }
+            function startRecaptchaObserver() {
+                if (window._recaptchaMutationObserver) return;
+                window._recaptchaMutationObserver = new MutationObserver(function () {
+                    renderRecaptchaWidgets();
+                    var els = document.querySelectorAll('.g-recaptcha');
+                    if (els.length === 0 || Array.from(els).every(function (el) { return el.childElementCount > 0; })) {
+                        window._recaptchaMutationObserver.disconnect();
+                        window._recaptchaMutationObserver = null;
+                    }
+                });
+                window._recaptchaMutationObserver.observe(document.body, { childList: true, subtree: true });
+            }
             function recaptchaOnload() {
                 renderRecaptchaWidgets();
-                if (!window._recaptchaMutationObserver) {
-                    window._recaptchaMutationObserver = new MutationObserver(function () {
-                        renderRecaptchaWidgets();
-                        // Disconnect once all widgets on the page are rendered
-                        if (document.querySelectorAll('.g-recaptcha').length > 0 &&
-                            Array.from(document.querySelectorAll('.g-recaptcha')).every(function (el) { return el.childElementCount > 0; })) {
-                            window._recaptchaMutationObserver.disconnect();
-                            window._recaptchaMutationObserver = null;
-                        }
-                    });
-                    window._recaptchaMutationObserver.observe(document.body, { childList: true, subtree: true });
-                }
+                startRecaptchaObserver();
+            }
+            if (!window._recaptchaEnhancedLoadBound) {
+                window._recaptchaEnhancedLoadBound = true;
+                document.addEventListener('enhancedload', function () {
+                    renderRecaptchaWidgets();
+                    startRecaptchaObserver();
+                });
             }
         </script>
         <script src="https://www.google.com/recaptcha/api.js?onload=recaptchaOnload&render=explicit" async defer></script>
