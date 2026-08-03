@@ -122,10 +122,6 @@ app.UseRateLimiter();
 
 app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config, IAntiforgery antiforgery, FixedWindowRateLimiter loginGlobalLimiter) =>
 {
-    using var globalLease = loginGlobalLimiter.AttemptAcquire();
-    if (!globalLease.IsAcquired)
-        return Results.StatusCode(StatusCodes.Status429TooManyRequests);
-
     try
     {
         await antiforgery.ValidateRequestAsync(ctx);
@@ -133,6 +129,14 @@ app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config, IA
     catch (AntiforgeryValidationException)
     {
         return Results.BadRequest("Invalid antiforgery token");
+    }
+
+    using var globalLease = loginGlobalLimiter.AttemptAcquire();
+    if (!globalLease.IsAcquired)
+    {
+        if (globalLease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+            ctx.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+        return Results.StatusCode(StatusCodes.Status429TooManyRequests);
     }
 
     var form = await ctx.Request.ReadFormAsync();
