@@ -67,6 +67,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/admin/login";
         options.AccessDeniedPath = "/admin/login";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
     });
 
 builder.Services.AddAuthorization();
@@ -74,6 +76,16 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<RecaptchaService>();
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddHttpContextAccessor();
+
+// Aggregate cap across all sources, independent of the per-IP "login" policy, to
+// blunt distributed credential-stuffing attempts spread across many IPs.
+builder.Services.AddSingleton(new FixedWindowRateLimiter(new FixedWindowRateLimiterOptions
+{
+    PermitLimit = 20,
+    Window = TimeSpan.FromMinutes(5),
+    QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+    QueueLimit = 0
+}));
 
 var app = builder.Build();
 
@@ -108,7 +120,7 @@ app.UseAuthorization();
 app.UseAntiforgery();
 app.UseRateLimiter();
 
-app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config, IAntiforgery antiforgery) =>
+app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config, IAntiforgery antiforgery, FixedWindowRateLimiter loginGlobalLimiter) =>
 {
     try
     {
@@ -117,6 +129,14 @@ app.MapPost("/admin/do-login", async (HttpContext ctx, IConfiguration config, IA
     catch (AntiforgeryValidationException)
     {
         return Results.BadRequest("Invalid antiforgery token");
+    }
+
+    using var globalLease = loginGlobalLimiter.AttemptAcquire();
+    if (!globalLease.IsAcquired)
+    {
+        if (globalLease.TryGetMetadata(MetadataName.RetryAfter, out var retryAfter))
+            ctx.Response.Headers.RetryAfter = ((int)retryAfter.TotalSeconds).ToString();
+        return Results.StatusCode(StatusCodes.Status429TooManyRequests);
     }
 
     var form = await ctx.Request.ReadFormAsync();
