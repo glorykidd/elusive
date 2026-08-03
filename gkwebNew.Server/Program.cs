@@ -36,6 +36,22 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             });
     });
+    options.AddPolicy("contact-form", ctx =>
+    {
+        if (!HttpMethods.IsPost(ctx.Request.Method))
+            return RateLimitPartition.GetNoLimiter("contact-form-non-post");
+
+        var ip = ctx.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: ip,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(15),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            });
+    });
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
