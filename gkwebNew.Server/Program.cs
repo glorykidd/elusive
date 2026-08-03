@@ -65,6 +65,11 @@ var emailKeys = new[] { "Email:SmtpHost", "Email:SmtpPort", "Email:FromAddress",
 if (emailKeys.Any(k => string.IsNullOrWhiteSpace(app.Configuration[k]) || (app.Configuration[k]?.Contains("REPLACE_IN_PRODUCTION") ?? false)))
     emailLogger.LogWarning("Email is not fully configured — contact form notifications will not be sent. Check Email:* settings in appsettings.Production.json.");
 
+var recaptchaLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("RecaptchaConfiguration");
+var recaptchaKeys = new[] { "Recaptcha:SiteKey", "Recaptcha:SecretKey" };
+if (recaptchaKeys.Any(k => string.IsNullOrWhiteSpace(app.Configuration[k]) || (app.Configuration[k]?.Contains("REPLACE_IN_PRODUCTION") ?? false)))
+    recaptchaLogger.LogWarning("reCAPTCHA is not fully configured — contact form submissions will not be verified. Check Recaptcha:* settings in appsettings.Production.json.");
+
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ContactDbContext>();
