@@ -67,6 +67,8 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.LoginPath = "/admin/login";
         options.AccessDeniedPath = "/admin/login";
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+        options.Cookie.SameSite = SameSiteMode.Strict;
     });
 
 builder.Services.AddAuthorization();
