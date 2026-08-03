@@ -3,6 +3,8 @@
 @using gkwebNew.Services
 @using gkweb.api.types.models
 @using Microsoft.AspNetCore.Http
+@using Microsoft.AspNetCore.RateLimiting
+@attribute [EnableRateLimiting("contact-form")]
 @inject ContactDbContext Db
 @inject EmailService Email
 @inject RecaptchaService Recaptcha

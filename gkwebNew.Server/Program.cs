@@ -36,6 +36,23 @@ builder.Services.AddRateLimiter(options =>
                 QueueLimit = 0
             });
     });
+    options.AddPolicy("contact-form", ctx =>
+    {
+        if (!HttpMethods.IsPost(ctx.Request.Method))
+            return RateLimitPartition.GetNoLimiter("contact-form-non-post");
+
+        var partitionKey = ctx.Connection.RemoteIpAddress?.ToString() ?? "contact-form-unknown-ip";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: partitionKey,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(15),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = 0
+            });
+    });
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
 });
 
@@ -60,10 +77,17 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-var emailLogger = app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("EmailConfiguration");
+var loggerFactory = app.Services.GetRequiredService<ILoggerFactory>();
+
+var emailLogger = loggerFactory.CreateLogger("EmailConfiguration");
 var emailKeys = new[] { "Email:SmtpHost", "Email:SmtpPort", "Email:FromAddress", "Email:Username", "Email:Password", "Email:AdminNotificationAddress" };
 if (emailKeys.Any(k => string.IsNullOrWhiteSpace(app.Configuration[k]) || (app.Configuration[k]?.Contains("REPLACE_IN_PRODUCTION") ?? false)))
     emailLogger.LogWarning("Email is not fully configured — contact form notifications will not be sent. Check Email:* settings in appsettings.Production.json.");
+
+var recaptchaLogger = loggerFactory.CreateLogger("RecaptchaConfiguration");
+var recaptchaKeys = new[] { "Recaptcha:SiteKey", "Recaptcha:SecretKey" };
+if (recaptchaKeys.Any(k => string.IsNullOrWhiteSpace(app.Configuration[k]) || (app.Configuration[k]?.Contains("REPLACE_IN_PRODUCTION") ?? false)))
+    recaptchaLogger.LogWarning("reCAPTCHA is not fully configured — contact form submissions will not be verified. Check Recaptcha:* settings in appsettings.Production.json.");
 
 using (var scope = app.Services.CreateScope())
 {
