@@ -41,12 +41,10 @@ builder.Services.AddRateLimiter(options =>
         if (!HttpMethods.IsPost(ctx.Request.Method))
             return RateLimitPartition.GetNoLimiter("contact-form-non-post");
 
-        var ip = ctx.Connection.RemoteIpAddress?.ToString();
-        if (ip is null)
-            return RateLimitPartition.GetNoLimiter("contact-form-unknown-ip");
+        var partitionKey = ctx.Connection.RemoteIpAddress?.ToString() ?? "contact-form-unknown-ip";
 
         return RateLimitPartition.GetFixedWindowLimiter(
-            partitionKey: ip,
+            partitionKey: partitionKey,
             factory: _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 5,
