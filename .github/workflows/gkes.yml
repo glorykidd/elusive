@@ -103,6 +103,11 @@ jobs:
           dotnet publish -c Release -o C:/www-root/glorykidd.com
       - name: Ensure logs directory exists
         run: New-Item -ItemType Directory -Path "C:/www-root/glorykidd.com/logs" -Force
+      - name: Ensure DB data directory exists and is writable by the app pool
+        run: |
+          $dataPath = "C:\www-root\web-data\elusive"
+          New-Item -ItemType Directory -Path $dataPath -Force
+          icacls "$dataPath" /grant "IIS AppPool\ElusiveSoftware:(OI)(CI)M" /T
       - name: Start IIS app pool after deploy
         run: |
           Import-Module WebAdministration
