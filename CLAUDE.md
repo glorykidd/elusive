@@ -22,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Static assets:** `gkwebNew/wwwroot/` contains CSS, images; referenced via `_content/gkwebNew/` paths in the server project
 - **Global imports:** `_Imports.razor` centralizes `@using` directives for all Razor components
 - **Admin area:** `gkwebNew.Server/Components/Pages/Admin/` — cookie-authenticated pages (`/admin`, `/admin/contacts`, `/admin/contacts/{id}`, `/admin/login`) using `AdminLayout`
-- **Database:** `gkwebNew/Data/ContactDbContext.cs` — EF Core DbContext; SQLite DB at `data/contact.db` (path from `ConnectionStrings:ContactDb` in `appsettings.json`)
+- **Database:** `gkwebNew/Data/ContactDbContext.cs` — EF Core DbContext; SQLite DB at `data/contact.db` in dev (path from `ConnectionStrings:ContactDb` in `appsettings.json`). In production, `appsettings.Production.json` points this at `C:\www-root\web-data\elusive` — a folder outside the IIS site root (`C:\www-root\glorykidd.com`) so `dotnet publish -o` never touches it across deploys; the deploy workflow ensures this folder exists and is writable by the app pool
 - **Auth:** Cookie authentication via `Program.cs`; credentials in `appsettings.Production.json` on the server (never committed); login uses `CryptographicOperations.FixedTimeEquals` for timing-safe comparison
 
 ## Stack Best Practices
